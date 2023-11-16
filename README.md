@@ -9,3 +9,8 @@ Python Libraries: We'll use requests for making API calls and possibly pandas fo
 Fetching Data: The script will fetch real-time data from the selected API.
 
 Displaying Data: Display the data in a readable format in the console. This can be later expanded to a GUI or a web application.
+
+
+Remember, you'll need to install the requests library if you haven't already:
+
+pip install requests
