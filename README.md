@@ -14,3 +14,15 @@ Displaying Data: Display the data in a readable format in the console. This can 
 Remember, you'll need to install the requests library if you haven't already:
 
 pip install requests
+
+
+
+
+
+If the Python script runs successfully on your machine, the output would look like a simple text display in the console showing the current prices of the selected cryptocurrencies in USD. Here's an example of what you might see:
+
+Bitcoin: $ 39856.23
+
+Ethereum: $ 2795.42
+
+Litecoin: $ 132.50
