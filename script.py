@@ -1,6 +1,11 @@
-import requests
+from fastapi import FastAPI, HTTPException
 from datetime import datetime, timedelta
+import requests
 import matplotlib.pyplot as plt
+from io import BytesIO
+from fastapi.responses import StreamingResponse
+
+app = FastAPI()
 
 def get_historical_prices(crypto_ids, days):
     prices_data = {}
@@ -15,17 +20,16 @@ def get_historical_prices(crypto_ids, days):
             data = response.json()
             prices_data[crypto_id] = data['prices']
         except requests.RequestException as e:
-            print(f"Error fetching historical data for {crypto_id}: {e}")
+            raise HTTPException(status_code=400, detail=f"Error fetching historical data for {crypto_id}: {str(e)}")
 
     return prices_data
 
-def analyze_and_plot_data(prices_data, days):
+def plot_data(prices_data, days):
+    plt.figure(figsize=(10, 6))
     for crypto_id, prices in prices_data.items():
         if not prices:
-            print(f"No data for analysis for {crypto_id}")
             continue
-
-        dates = [datetime.fromtimestamp(price[0]/1000.0) for price in prices]
+        dates = [datetime.fromtimestamp(price[0] / 1000.0) for price in prices]
         values = [price[1] for price in prices]
         plt.plot(dates, values, label=crypto_id)
 
@@ -33,13 +37,22 @@ def analyze_and_plot_data(prices_data, days):
     plt.ylabel('Price in USD')
     plt.title(f'Historical Prices for the Past {days} Days')
     plt.legend()
-    plt.show()
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    plt.close()
+    buf.seek(0)
+    return buf
 
-def main():
-    cryptos = ["bitcoin", "ethereum"]  # Add more cryptocurrency IDs as needed
-    days = 30  # Number of days to look back
-    historical_prices = get_historical_prices(cryptos, days)
-    analyze_and_plot_data(historical_prices, days)
+@app.get("/prices/{crypto_ids}/{days}")
+async def historical_prices(crypto_ids: str, days: int):
+    crypto_list = crypto_ids.split(',')
+    prices_data = get_historical_prices(crypto_list, days)
+    return prices_data
 
-if __name__ == "__main__":
-    main()
+@app.get("/plot/{crypto_ids}/{days}")
+async def plot_prices(crypto_ids: str, days: int):
+    crypto_list = crypto_ids.split(',')
+    prices_data = get_historical_prices(crypto_list, days)
+    plot_buf = plot_data(prices_data, days)
+    return StreamingResponse(plot_buf, media_type="image/png")
+
