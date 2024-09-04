@@ -75,6 +75,7 @@ if prices:
         price = prices.get(crypto, {}).get('usd', 'N/A')
         print(f"{crypto.capitalize()}: ${price:.2f}")
 
+```
 ### Example Output
 
 When you run the script, the output might look like this:
